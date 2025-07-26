@@ -7,7 +7,7 @@ import (
 	"github.com/tlaceby/parser-series/src/lexer"
 )
 
-func parse_stmt (p *parser) ast.Stmt {
+func parse_stmt(p *parser) ast.Stmt {
 	stmt_fn, exists := stmt_lu[p.currentTokenKind()]
 
 	if exists {
@@ -17,8 +17,8 @@ func parse_stmt (p *parser) ast.Stmt {
 	return parse_expression_stmt(p)
 }
 
-func parse_expression_stmt (p *parser) ast.ExpressionStmt{
-	expression := parse_expr(p, defalt_bp)
+func parse_expression_stmt(p *parser) ast.ExpressionStmt {
+	expression := parse_expr(p, default_bp)
 	p.expect(lexer.SEMI_COLON)
 
 	return ast.ExpressionStmt{
@@ -26,7 +26,7 @@ func parse_expression_stmt (p *parser) ast.ExpressionStmt{
 	}
 }
 
-func parse_block_stmt (p *parser) ast.Stmt {
+func parse_block_stmt(p *parser) ast.Stmt {
 	p.expect(lexer.OPEN_CURLY)
 	body := []ast.Stmt{}
 
@@ -40,18 +40,17 @@ func parse_block_stmt (p *parser) ast.Stmt {
 	}
 }
 
-func parse_var_decl_stmt (p *parser) ast.Stmt {
+func parse_var_decl_stmt(p *parser) ast.Stmt {
 	var explicitType ast.Type
 	startToken := p.advance().Kind
 	isConstant := startToken == lexer.CONST
 	symbolName := p.expectError(lexer.IDENTIFIER,
 		fmt.Sprintf("Following %s expected variable name however instead recieved %s instead\n",
-		lexer.TokenKindString(startToken), lexer.TokenKindString(p.currentTokenKind())))
-
+			lexer.TokenKindString(startToken), lexer.TokenKindString(p.currentTokenKind())))
 
 	if p.currentTokenKind() == lexer.COLON {
 		p.expect(lexer.COLON)
-		explicitType = parse_type(p, defalt_bp)
+		explicitType = parse_type(p, default_bp)
 	}
 
 	var assignmentValue ast.Expr
@@ -64,26 +63,26 @@ func parse_var_decl_stmt (p *parser) ast.Stmt {
 
 	p.expect(lexer.SEMI_COLON)
 
-	if (isConstant && assignmentValue == nil) {
+	if isConstant && assignmentValue == nil {
 		panic("Cannot define constant variable without providing default value.")
 	}
 
 	return ast.VarDeclarationStmt{
-		Constant: isConstant,
-		Identifier: symbolName.Value,
+		Constant:      isConstant,
+		Identifier:    symbolName.Value,
 		AssignedValue: assignmentValue,
-		ExplicitType: explicitType,
+		ExplicitType:  explicitType,
 	}
 }
 
-func parse_fn_params_and_body (p *parser) ([]ast.Parameter, ast.Type, []ast.Stmt) {
+func parse_fn_params_and_body(p *parser) ([]ast.Parameter, ast.Type, []ast.Stmt) {
 	functionParams := make([]ast.Parameter, 0)
 
 	p.expect(lexer.OPEN_PAREN)
 	for p.hasTokens() && p.currentTokenKind() != lexer.CLOSE_PAREN {
 		paramName := p.expect(lexer.IDENTIFIER).Value
 		p.expect(lexer.COLON)
-		paramType := parse_type(p, defalt_bp)
+		paramType := parse_type(p, default_bp)
 
 		functionParams = append(functionParams, ast.Parameter{
 			Name: paramName,
@@ -100,7 +99,7 @@ func parse_fn_params_and_body (p *parser) ([]ast.Parameter, ast.Type, []ast.Stmt
 
 	if p.currentTokenKind() == lexer.COLON {
 		p.advance()
-		returnType = parse_type(p, defalt_bp)
+		returnType = parse_type(p, default_bp)
 	}
 
 	functionBody := ast.ExpectStmt[ast.BlockStmt](parse_block_stmt(p)).Body
@@ -108,7 +107,7 @@ func parse_fn_params_and_body (p *parser) ([]ast.Parameter, ast.Type, []ast.Stmt
 	return functionParams, returnType, functionBody
 }
 
-func parse_fn_declaration (p *parser) ast.Stmt {
+func parse_fn_declaration(p *parser) ast.Stmt {
 	p.advance()
 	functionName := p.expect(lexer.IDENTIFIER).Value
 	functionParams, returnType, functionBody := parse_fn_params_and_body(p)
@@ -116,12 +115,12 @@ func parse_fn_declaration (p *parser) ast.Stmt {
 	return ast.FunctionDeclarationStmt{
 		Parameters: functionParams,
 		ReturnType: returnType,
-		Body: functionBody,
-		Name: functionName,
+		Body:       functionBody,
+		Name:       functionName,
 	}
 }
 
-func parse_if_stmt (p *parser) ast.Stmt {
+func parse_if_stmt(p *parser) ast.Stmt {
 	p.advance()
 	condition := parse_expr(p, assignment)
 	consequent := parse_block_stmt(p)
@@ -138,13 +137,13 @@ func parse_if_stmt (p *parser) ast.Stmt {
 	}
 
 	return ast.IfStmt{
-		Condition: condition,
+		Condition:  condition,
 		Consequent: consequent,
-		Alternate: alternate,
+		Alternate:  alternate,
 	}
 }
 
-func parse_import_stmt (p *parser) ast.Stmt {
+func parse_import_stmt(p *parser) ast.Stmt {
 	p.advance()
 	var importFrom string
 	importName := p.expect(lexer.IDENTIFIER).Value
@@ -163,7 +162,7 @@ func parse_import_stmt (p *parser) ast.Stmt {
 	}
 }
 
-func parse_foreach_stmt (p *parser) ast.Stmt {
+func parse_foreach_stmt(p *parser) ast.Stmt {
 	p.advance()
 	valueName := p.expect(lexer.IDENTIFIER).Value
 
@@ -175,18 +174,18 @@ func parse_foreach_stmt (p *parser) ast.Stmt {
 	}
 
 	p.expect(lexer.IN)
-	iterable := parse_expr(p, defalt_bp)
+	iterable := parse_expr(p, default_bp)
 	body := ast.ExpectStmt[ast.BlockStmt](parse_block_stmt(p)).Body
 
-	return ast.ForeachStmt {
-		Value: valueName,
-		Index: index,
+	return ast.ForeachStmt{
+		Value:    valueName,
+		Index:    index,
 		Iterable: iterable,
-		Body: body,
+		Body:     body,
 	}
 }
 
-func parse_class_declaration_stmt (p *parser) ast.Stmt {
+func parse_class_declaration_stmt(p *parser) ast.Stmt {
 	p.advance()
 	className := p.expect(lexer.IDENTIFIER).Value
 	classBody := parse_block_stmt(p)
