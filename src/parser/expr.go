@@ -47,7 +47,7 @@ func parse_assignment_expr(p *parser, left ast.Expr, bp binding_power) ast.Expr 
 	rhs := parse_expr(p, bp)
 
 	return ast.AssignmentExpr{
-		Assigne:       left,
+		Assignee:      left,
 		AssignedValue: rhs,
 	}
 }
@@ -132,7 +132,7 @@ func parse_array_literal_expr(p *parser) ast.Expr {
 func parse_grouping_expr(p *parser) ast.Expr {
 	p.expect(lexer.OPEN_PAREN)
 	expr := parse_expr(p, default_bp)
-	p.expect(lexer.OPEN_PAREN)
+	p.expect(lexer.CLOSE_PAREN)
 	return expr
 }
 

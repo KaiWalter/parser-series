@@ -84,31 +84,31 @@ func createTokenLookups() {
 	nud(lexer.TYPEOF, parse_prefix_expr)
 	nud(lexer.DASH, parse_prefix_expr)
 	nud(lexer.NOT, parse_prefix_expr)
-	// nud(lexer.OPEN_BRACKET, parse_array_literal_expr)
+	nud(lexer.OPEN_BRACKET, parse_array_literal_expr)
 
-	// // Member / Computed // Call
-	// led(lexer.DOT, member, parse_member_expr)
-	// led(lexer.OPEN_BRACKET, member, parse_member_expr)
-	// led(lexer.OPEN_PAREN, call, parse_call_expr)
+	// Member / Computed // Call
+	led(lexer.DOT, member, parse_member_expr)
+	led(lexer.OPEN_BRACKET, member, parse_member_expr)
+	led(lexer.OPEN_PAREN, call, parse_call_expr)
 
-	// // Grouping Expr
-	// nud(lexer.OPEN_PAREN, default_bp, parse_grouping_expr)
-	// nud(lexer.FN, default_bp, parse_fn_expr)
-	// nud(lexer.NEW, default_bp, func(p *parser) ast.Expr {
-	// 	p.advance()
-	// 	classInstantiation := parse_expr(p, default_bp)
+	// Grouping Expr
+	nud(lexer.OPEN_PAREN, parse_grouping_expr)
+	nud(lexer.FN, parse_fn_expr)
+	nud(lexer.NEW, func(p *parser) ast.Expr {
+		p.advance()
+		classInstantiation := parse_expr(p, default_bp)
 
-	// 	return ast.NewExpr{
-	// 		Instantiation: ast.ExpectExpr[ast.CallExpr](classInstantiation),
-	// 	}
-	// })
+		return ast.NewExpr{
+			Instantiation: ast.ExpectExpr[ast.CallExpr](classInstantiation),
+		}
+	})
 
-	// stmt(lexer.OPEN_CURLY, parse_block_stmt)
-	// stmt(lexer.LET, parse_var_decl_stmt)
-	// stmt(lexer.CONST, parse_var_decl_stmt)
-	// stmt(lexer.FN, parse_fn_declaration)
-	// stmt(lexer.IF, parse_if_stmt)
-	// stmt(lexer.IMPORT, parse_import_stmt)
-	// stmt(lexer.FOREACH, parse_foreach_stmt)
-	// stmt(lexer.CLASS, parse_class_declaration_stmt)
+	stmt(lexer.OPEN_CURLY, parse_block_stmt)
+	stmt(lexer.LET, parse_var_decl_stmt)
+	stmt(lexer.CONST, parse_var_decl_stmt)
+	stmt(lexer.FN, parse_fn_declaration)
+	stmt(lexer.IF, parse_if_stmt)
+	stmt(lexer.IMPORT, parse_import_stmt)
+	stmt(lexer.FOREACH, parse_foreach_stmt)
+	stmt(lexer.CLASS, parse_class_declaration_stmt)
 }
