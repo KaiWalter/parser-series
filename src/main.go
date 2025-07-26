@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	sourceBytes, _ := os.ReadFile("../mini.lang")
+	sourceBytes, _ := os.ReadFile("test.lang")
 	source := string(sourceBytes)
 	start := time.Now()
 	ast := parser.Parse(source)
